@@ -18,6 +18,7 @@ class Generation(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)  # UUID как PK
     length = Column(Integer, nullable=False)
+    seed = Column(String(255), nullable=True)
     initial_fill = Column(String(255), nullable=False)
     sequence = Column(Text, nullable=False)
     file_url = Column(String(500), nullable=True)  # Только для генераций с файлом
