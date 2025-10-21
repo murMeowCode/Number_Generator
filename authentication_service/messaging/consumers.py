@@ -9,7 +9,7 @@ from shared.schemas.messaging import (
     BaseMessage, MessageType,
     TokenVerifyMessage
 )
-from auth_service.services.auth_service import AuthService
+from authentication_service.services.auth_service import AuthService
 
 logger = logging.getLogger(__name__)
 
