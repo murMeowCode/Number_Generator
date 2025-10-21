@@ -22,9 +22,7 @@ class FileService:
     async def init_minio():
         """Инициализация MinIO buckets при старте приложения"""
         buckets = [
-            settings.MINIO_GENERATED_BUCKET,
             settings.MINIO_UPLOADED_BUCKET,
-            settings.MINIO_TEST_RESULTS_BUCKET
         ]
 
         try:
