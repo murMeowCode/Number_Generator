@@ -3,6 +3,8 @@ import uuid
 import re
 from datetime import datetime
 from typing import List, Optional, Tuple
+
+from sqlalchemy import select
 from statistics_service.schemas.statistics import (
     StatisticsRequest, FileStatisticsRequest, StatisticsResponse, TestResult
 )
@@ -18,11 +20,13 @@ class StatisticsProcessor:
         self.db = db
         self.minio_client = minio_client
         
-    async def get_statistics_by_id(self, statistics_id: uuid.UUID) -> Optional[StatisticsResponse]:
+    async def get_statistics_by_id(self, sequence_id: uuid.UUID) -> Optional[StatisticsResponse]:
         """Получение статистики по ID из базы данных"""
         try:
             # Предполагая, что у вас есть модель StatisticsDB и соответствующий репозиторий
-            db_record = await self.db.get(StatisticsDB, statistics_id)
+            query = select(StatisticsDB).where(StatisticsDB.id == sequence_id)
+            result = await self.db.execute(query)
+            db_record = result.scalar_one_or_none()
             
             if not db_record:
                 return None
@@ -41,7 +45,7 @@ class StatisticsProcessor:
             )
         
         except Exception as e:
-            logger.error(f"Error getting statistics by ID {statistics_id}: {str(e)}")
+            logger.error(f"Error getting statistics by ID {sequence_id}: {str(e)}")
             raise
     
     def _parse_sequence(self, sequence_str: str) -> Tuple[List[int], int, int]:

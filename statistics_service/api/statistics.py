@@ -101,7 +101,7 @@ async def analyze_file(file: UploadFile = File(...),
         )
 
 @router.get(
-    "/{statistics_id}",
+    "/{sequence_id}",
     response_model=StatisticsResponseSchema,
     status_code=status.HTTP_200_OK,
     responses={
@@ -110,21 +110,21 @@ async def analyze_file(file: UploadFile = File(...),
     }
 )
 async def get_statistics(
-    statistics_id: UUID,
+    sequence_id: UUID,
     db: AsyncSession = Depends(get_db)
 ):
     """Получение результатов статистики по ID"""
-    logger.info(f"Getting statistics by ID: {statistics_id}")
+    logger.info(f"Getting statistics by sequence_ID: {sequence_id}")
     
     try:
         logger.debug("Creating StatisticsProcessor instance")
         processor = StatisticsProcessor(db, None)  # MinIO не нужен для чтения
         
         logger.info("Fetching statistics from database")
-        result = await processor.get_statistics_by_id(statistics_id)
+        result = await processor.get_statistics_by_id(sequence_id)
         
         if not result:
-            logger.warning(f"Statistics not found for ID: {statistics_id}")
+            logger.warning(f"Statistics not found for sequence_ID: {sequence_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Statistics record not found"
@@ -149,7 +149,7 @@ async def get_statistics(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching statistics by ID {statistics_id}: {str(e)}", exc_info=True)
+        logger.error(f"Error fetching statistics by ID {sequence_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching statistics: {str(e)}"
