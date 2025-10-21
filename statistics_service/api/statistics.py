@@ -1,9 +1,13 @@
 import logging
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from sqlalchemy import func, select
 from shared.database.database import get_db, AsyncSession
+from statistics_service.models.statistics import StatisticsDB
+from statistics_service.schemas.dashboard import DashboardOverviewSchema
 from statistics_service.schemas.statistics import (
     StatisticsRequest, StatisticsResponseSchema, FileStatisticsResponseSchema, ErrorResponse)
+from statistics_service.services.dashboard_utils import get_bit_distribution_data, get_heatmap_data, get_worst_tests_data
 from statistics_service.services.statistics_processor import StatisticsProcessor
 from statistics_service.storage import get_minio_client, MinIOClient
 from statistics_service.schemas.statistics import FileStatisticsRequest
@@ -153,4 +157,54 @@ async def get_statistics(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching statistics: {str(e)}"
+        )
+
+@router.get(
+    "/dashboard/overview",
+    response_model=DashboardOverviewSchema,
+    status_code=status.HTTP_200_OK
+)
+async def get_dashboard_overview(db: AsyncSession = Depends(get_db)):
+    """Получение обзорной статистики для дашборда"""
+    logger.info("Fetching dashboard overview data")
+    
+    try:
+        # 1. Всего последовательностей
+        total_sequences_query = select(func.count(StatisticsDB.id))
+        total_result = await db.execute(total_sequences_query)
+        total_sequences = total_result.scalar()
+
+        # 2. Средняя длина последовательностей
+        avg_length_query = select(func.avg(StatisticsDB.sequence_length))
+        avg_length_result = await db.execute(avg_length_query)
+        avg_sequence_length = round(avg_length_result.scalar() or 0, 2)
+
+        # 3. Общий средний успех прохождения тестов
+        avg_success_query = select(func.avg(StatisticsDB.summary['success_rate'].as_float()))
+        avg_success_result = await db.execute(avg_success_query)
+        avg_success_rate = round(avg_success_result.scalar() or 0, 2)
+
+        # 4. Данные для столбчатой гистограммы распределения 0 и 1
+        bit_distribution_data = await get_bit_distribution_data(db)
+
+        # 5. Два самых неуспешных теста
+        worst_tests_data = await get_worst_tests_data(db)
+
+        # 6. Данные для хитмапа последних 10 последовательностей
+        heatmap_data = await get_heatmap_data(db)
+
+        return DashboardOverviewSchema(
+            total_sequences=total_sequences,
+            avg_sequence_length=avg_sequence_length,
+            avg_success_rate=avg_success_rate,
+            bit_distribution=bit_distribution_data,
+            worst_tests=worst_tests_data,
+            heatmap_data=heatmap_data
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching dashboard data: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Dashboard data fetching error: {str(e)}"
         )
