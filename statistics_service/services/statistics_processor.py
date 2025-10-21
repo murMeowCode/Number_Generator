@@ -1,3 +1,4 @@
+import logging
 import uuid
 import re
 from datetime import datetime
@@ -9,6 +10,8 @@ from statistics_service.services.stat_service import SequenceTester
 from statistics_service.models.statistics import StatisticsDB
 from statistics_service.storage import MinIOClient
 from shared.database.database import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 class StatisticsProcessor:
     def __init__(self, db : AsyncSession, minio_client : MinIOClient):
@@ -149,23 +152,51 @@ class StatisticsProcessor:
     
     async def _save_to_database(self, response: StatisticsResponse, file_reference: str = None):
         """Сохранение результатов в базу данных"""
-        db_record = StatisticsDB(
-            id=response.statistics_id,
-            sequence_id=response.sequence_id,
-            sequence_length=response.sequence_length,
-            ones_count=response.ones_count,
-            zeros_count=response.zeros_count,
-            ones_proportion=response.ones_proportion,
-            tests_results={
-                test_type.value: {
-                    "p_value": result.p_value,
-                    "result": result.result.value,
-                    "details": result.details
+        try:
+            # Проверяем что db инициализирован
+            if self.db is None:
+                print("Database connection is None in _save_to_database")
+                raise ValueError("Database connection is not initialized")
+            
+            # Логируем начало сохранения
+            print(f"Saving statistics to database. Statistics ID: {response.statistics_id}")
+            
+            # Создаем запись с проверкой данных
+            tests_results = {}
+            if response.tests_results:
+                tests_results = {
+                    test_type.value: {
+                        "p_value": result.p_value,
+                        "result": result.result.value,
+                        "details": result.details
+                    }
+                    for test_type, result in response.tests_results.items()
+                    if result and hasattr(result, 'result') and result.result
                 }
-                for test_type, result in response.tests_results.items()
-            },
-            summary=response.summary,
-            file_reference=file_reference
-        )
-        
-        await self.db.add(db_record)
+            
+            db_record = StatisticsDB(
+                id=response.statistics_id,
+                sequence_id=response.sequence_id,
+                sequence_length=response.sequence_length,
+                ones_count=response.ones_count,
+                zeros_count=response.zeros_count,
+                ones_proportion=response.ones_proportion,
+                tests_results=tests_results,
+                summary=response.summary,
+                file_reference=file_reference
+            )
+            
+            print(f"Created database record: {db_record}")
+            
+            # Сохраняем в базу
+            self.db.add(db_record)
+            await self.db.commit()  # Если нужно явное подтверждение
+            
+            print(f"Successfully saved statistics to database. Statistics ID: {response.statistics_id}")
+            
+        except Exception as e:
+            print(f"Error saving to database for statistics_id {response.statistics_id}: {str(e)}")
+            # Откатываем транзакцию если была начата
+            if self.db:
+                await self.db.rollback()
+            raise

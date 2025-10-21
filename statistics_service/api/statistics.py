@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from shared.database.database import get_db, AsyncSession
 from statistics_service.schemas.statistics import (
@@ -8,6 +9,7 @@ from statistics_service.schemas.statistics import FileStatisticsRequest
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
 
+logger = logging.getLogger(__name__)
 
 @router.post(
     "/sequence",
@@ -19,12 +21,21 @@ router = APIRouter(prefix="/statistics", tags=["statistics"])
     }
 )
 async def analyze_sequence(request: StatisticsRequest,
-                           db: AsyncSession=Depends(get_db),
-                           minio : MinIOClient=Depends(get_minio_client)):
+                           db: AsyncSession = Depends(get_db),
+                           minio: MinIOClient = Depends(get_minio_client)):
     """Анализ статистики для строковой последовательности"""
+    logger.info(f"Starting sequence analysis for sequence_id: {request.sequence_id}, "
+                f"sequence_length: {len(request.sequence)}")
+    
     try:
-        processor = StatisticsProcessor(db,minio)
+        logger.debug("Creating StatisticsProcessor instance")
+        processor = StatisticsProcessor(db, minio)
+        
+        logger.info("Processing sequence statistics")
         result = await processor.process_sequence_statistics(request)
+        
+        logger.info(f"Successfully processed statistics. Statistics ID: {result.statistics_id}, "
+                   f"Tests passed: {result.summary['tests_passed']}/{result.summary['tests_total']}")
         
         return StatisticsResponseSchema(
             statistics_id=result.statistics_id,
@@ -38,6 +49,7 @@ async def analyze_sequence(request: StatisticsRequest,
             success_rate=result.summary["success_rate"],
             created_at=result.created_at
         )
+        
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
