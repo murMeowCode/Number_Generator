@@ -5,7 +5,8 @@ import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from generator_service.services.file_service import FileService
 from generator_service.models.generation import Generation
-
+from generator_service.services.lfsr.lfsr_base import LFSR
+from generator_service.services.lfsr.utils import generate_seed, generate_win_comb
 
 class GenerationService:
     def __init__(self, db: AsyncSession, file_service: FileService):
@@ -16,31 +17,20 @@ class GenerationService:
         """
         Генерирует начальное заполнение и последовательность (заглушки).
         """
-        url = "https://services.swpc.noaa.gov/json/goes/primary/xray-flares-latest.json"
-        
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        
-        data = response.json()
-        
-        if not data:
-            print("Ошибка: Получены пустые данные.")
-            return None
-            
-        current_ratio = data[0].get('current_ratio', 'Поле не найдено')
-        initial_fill = f"seed_{length}"
-        sequence = ''.join(random.choice('01') for _ in range(length))
-        return initial_fill, sequence
+        seed = generate_seed.get_seed()
+        lfsr = LFSR(seed=seed)
+        sequence = lfsr.get_sequence(len_seq=length)
+        return seed, sequence
 
     async def generate_and_save_in_db(self, length: int) -> Generation:
         """
         Генерирует последовательность и сохраняет в БД (без файла).
         Возвращает объект Generation.
         """
-        initial_fill, sequence = await self.generate_sequence(length)
+        seed, sequence = await self.generate_sequence(length)
         generation = Generation(
             length=length,
-            initial_fill=initial_fill,
+            initial_fill=str(seed),
             sequence=sequence,
         )
         self.db.add(generation)
