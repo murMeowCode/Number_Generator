@@ -1,8 +1,10 @@
 """служба генерации"""#pylint: disable=W0706
+from typing import Optional
 import uuid
 import requests
 import random
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select 
 from generator_service.services.file_service import FileService
 from generator_service.models.generation import Generation
 from generator_service.services.lfsr.lfsr_base import LFSR
@@ -66,3 +68,38 @@ class GenerationService:
         await self.db.commit()
 
         return generation_id, initial_fill, file_url
+    
+    async def generate_winners_and_save(self, max_number: int, count_of_winning_numbers: int) -> dict:
+        """
+        Генерирует выигранные билеты, последовательность и сохраняет в БД.
+        Возвращает словарь для JSON-ответа.
+        """
+        seed = generate_seed.get_seed()
+        lfsr = LFSR(seed=seed)
+        winning_comb, sequence = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
+
+        generation = Generation(
+            length=128,
+            initial_fill=str(seed),
+            sequence=sequence,
+            winer=str(winning_comb),
+        )
+        self.db.add(generation)
+        await self.db.commit()
+        await self.db.refresh(generation)
+
+        return {
+            "winning_tickets": winning_comb,
+            "sequence": sequence,
+            "initial_fill": str(seed),
+        }
+
+    async def get_generation_by_id(self, generation_id: str) -> Optional[Generation]:
+        """
+        Получает генерацию по ID из БД.
+        """
+        
+        result = await self.db.execute(
+            select(Generation).where(Generation.id == generation_id)
+        )
+        return result.scalar_one_or_none()
