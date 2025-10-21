@@ -19,18 +19,16 @@ async def register(
 ):
     """Регистрация нового пользователя"""
     user_service = UserService(db)
-    result = await user_service.create_user(user_data)
 
-    if not result["success"]:
+    try:
+        result = await user_service.create_user(user_data)
+        return UserRegisterResponse.model_validate(result)
+
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=result["error"]
+            detail=str(e)
         )
-
-    return UserRegisterResponse(
-        success=True,
-        user_id=result["user_id"]
-    )
 
 @router.post("/login", response_model=LoginResponse)
 async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):

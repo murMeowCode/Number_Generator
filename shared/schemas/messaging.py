@@ -13,8 +13,6 @@ class UserRegister(BaseModel):
     name: str
     fathername: str
     birth_date: date
-    phone: Optional[str] = None
-    address: Optional[str] = None
 
 class MessageType(str, Enum):
     """класс-перечисление типов сообщений"""

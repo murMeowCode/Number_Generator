@@ -59,7 +59,10 @@ class UserService:
             username=user_data.username,
             email=user_data.email,
             hashed_password=hashed_password,
-            role=user_data.role
+            name = user_data.name,
+            surname = user_data.surname,
+            fathername = user_data.fathername,
+            birth_date = user_data.birth_date
         )
 
         self.db.add(user)
