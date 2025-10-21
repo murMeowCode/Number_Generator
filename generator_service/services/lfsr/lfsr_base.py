@@ -1,3 +1,5 @@
+from generator_service.services.lfsr.utils.generate_win_comb import fon_neyman
+
 class LFSR:
     def __init__(self, seed=None, polynomial=None, length=128):
         """
@@ -88,4 +90,7 @@ class LFSR:
             self.state = 1
 
     def get_sequence(self, len_seq = 1000):
-        return "".join(str(self.next_bit()) for _ in range(len_seq))
+        len_seq_l = len_seq*5
+        res = [self.next_bit() for _ in range(len_seq_l)]
+        res = fon_neyman(res)[:len_seq]
+        return "".join(str(r) for r in res)

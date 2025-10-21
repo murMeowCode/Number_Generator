@@ -66,3 +66,35 @@ class GenerationService:
         await self.db.commit()
 
         return generation_id, initial_fill, file_url
+    
+    async def generate_winners_and_save(self, max_number: int, count_of_winning_numbers: int) -> dict:
+        """
+        Генерирует выигранные билеты, последовательность и сохраняет в БД.
+        Возвращает словарь для JSON-ответа.
+        """
+        # Генерируем seed (initial_fill)
+        seed = generate_seed.get_seed()
+        lfsr = LFSR(seed=seed)
+        winning_comb = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
+
+        # Генерируем sequence с помощью LFSR (длина 128, как в твоём примере)
+        
+        sequence = lfsr.get_sequence(len_seq=128)
+
+        # Сохраняем в БД (используем поле winer для winning_tickets_str)
+        generation = Generation(
+            length=128,  # Фиксированная длина для sequence
+            initial_fill=str(seed),  # Конвертация seed в строку
+            sequence=sequence,
+            winer=winning_comb,  # Сохраняем выигранные билеты в поле winer
+        )
+        self.db.add(generation)
+        await self.db.commit()
+        await self.db.refresh(generation)
+
+        # Возвращаем данные для JSON-ответа
+        return {
+            "winning_tickets": winning_comb,
+            "sequence": sequence,
+            "initial_fill": str(seed),
+        }

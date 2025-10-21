@@ -1,5 +1,3 @@
-from ..lfsr_base import LFSR
-
 def fon_neyman(bits):
     corrected_bits = []
     i = 0
@@ -13,7 +11,7 @@ def fon_neyman(bits):
 
     return corrected_bits
 
-def extract_unique_digits(lfsr:LFSR, num_digits:int,
+def extract_unique_digits(lfsr, num_digits:int,
                            min_value:int = 0, max_value:int = 255):
     """
     Извлекает уникальные цифры из списка битов.
