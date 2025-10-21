@@ -31,29 +31,28 @@ def fetch_xray_flares_data():
         return None
 
 
-def get_last_12_digits_int(number):
-    """
-    Извлекает последние 12 цифр как целое число
-    """
-    num_str = str(number).replace('.', '')
-    last_12 = num_str[-12:] if len(num_str) >= 12 else num_str.zfill(12)
+def complete_conversion(original_float):
     
-    return int(last_12)
-
-
-def float_to_128bit_int(number):
-    """
-    Преобразует float в 128-битное целое число
-    """
-    # Масштабируем число до большого значения
-    scaled = number * (2**128)/1000
+    # Шаг 1: в строку
+    number_str = str(original_float)
     
-    # Берем целую часть и обрезаем до 128 бит
-    int_128 = int(scaled) & ((1 << 128) - 1)
+    # Шаг 2: в биты
+    string_bytes = number_str.encode('utf-8')
+    bit_string = ''.join(format(byte, '08b') for byte in string_bytes)
     
-    return int_128
+    # Шаг 3: до 128 бит
+    if len(bit_string) > 128:
+        bit_string = bit_string[:128]
+    elif len(bit_string) < 128:
+        bit_string = bit_string + '0' * (128 - len(bit_string))
+    
+    # Шаг 4: в число
+    final_number = int(bit_string, 2)
+    
+    
+    return final_number
 
 
 def get_seed():
     state = fetch_xray_flares_data()
-    return float_to_128bit_int(get_last_12_digits_int(state))
+    return complete_conversion(state)

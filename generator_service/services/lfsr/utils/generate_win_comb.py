@@ -1,5 +1,3 @@
-from ..lfsr_base import LFSR
-
 def fon_neyman(bits):
     corrected_bits = []
     i = 0
@@ -13,8 +11,8 @@ def fon_neyman(bits):
 
     return corrected_bits
 
-def extract_unique_digits(lfsr:LFSR, num_digits:int,
-                           min_value:int = 0, max_value:int = 255):
+def extract_unique_digits(lfsr, num_digits:int,
+                           min_value:int = 1, max_value:int = 255):
     """
     Извлекает уникальные цифры из списка битов.
     
@@ -27,11 +25,8 @@ def extract_unique_digits(lfsr:LFSR, num_digits:int,
     Returns:
         список уникальных цифр в заданном диапазоне
     """
-    count_bit = num_digits*8*500
-    bit_list = lfsr.get_sequence(count_bit)
-    bit_list = fon_neyman(bit_list)
-    print(len(bit_list))
-
+    count_bit = num_digits*8
+    bit_list = lfsr.get_sequence_ex(count_bit)
 
     # Проверяем, что список битов достаточно длинный
     if len(bit_list) < num_digits * 8:
@@ -61,9 +56,10 @@ def extract_unique_digits(lfsr:LFSR, num_digits:int,
             len(result) < num_digits):
             unique_digits.add(digit)
             result.append(digit)
+        print(result)
     
     # Если не набрали достаточно уникальных цифр
     if len(result) < num_digits:
         print(f"Предупреждение: найдено только {len(result)} уникальных цифр из {num_digits}")
-    
-    return result
+    print(result)
+    return ",".join(str(r) for r in result), "".join(str(r) for r in bit_list[:num_digits*8])
