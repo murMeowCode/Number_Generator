@@ -1,9 +1,8 @@
-""""""#pylint: disable=W1510,W0718, W1514
+"""задачи селери""" #pylint: disable=W1514, W0718
 import math
-from typing import Dict, Any
-from celery import Celery
+from typing import Any, Dict
+from generator_service.gen_celery.app import app
 
-app = Celery('statistics')
 
 def _nist_sts_test(sequence: str) -> Dict[str, Any]:
     """

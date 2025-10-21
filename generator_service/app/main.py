@@ -1,7 +1,11 @@
-"""главный файл сервиса"""# generator_service/main.py
+"""главный файл сервиса"""#pylint: disable=C0413
+import sys
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from generator_service.api.generation import router
 from generator_service.services.file_service import FileService
@@ -52,9 +56,6 @@ app = FastAPI(
     title="Generator Service",
     description="Сервис генерации случайных последовательностей и статистического тестирования",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
     lifespan=lifespan
 )
 
