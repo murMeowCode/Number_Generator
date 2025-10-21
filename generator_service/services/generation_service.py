@@ -76,16 +76,13 @@ class GenerationService:
         """
         seed = generate_seed.get_seed()
         lfsr = LFSR(seed=seed)
-        winning_comb = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
-
-        
-        sequence = lfsr.get_sequence(len_seq=128)
+        winning_comb, sequence = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
 
         generation = Generation(
             length=128,
             initial_fill=str(seed),
             sequence=sequence,
-            winer=winning_comb,
+            winer=str(winning_comb),
         )
         self.db.add(generation)
         await self.db.commit()

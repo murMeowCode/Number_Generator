@@ -90,8 +90,8 @@ async def generate_winners(
         raise HTTPException(status_code=400, detail="Неверные параметры: max_number должен быть >= count_of_winning_numbers > 0")
     
     try:
-        result = await generation_service.generate_winners_and_save(
-            request.max_number, request.count_of_winning_numbers
+        result = await generation_service.generate_winners_and_save( 
+            max_number=request.max_number, count_of_winning_numbers=request.count_of_winning_numbers
         )
         return GenerateWinnersResponse(
             winning_tickets=result["winning_tickets"],

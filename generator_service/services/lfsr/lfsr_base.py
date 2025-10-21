@@ -94,3 +94,9 @@ class LFSR:
         res = [self.next_bit() for _ in range(len_seq_l)]
         res = fon_neyman(res)[:len_seq]
         return "".join(str(r) for r in res)
+    
+    def get_sequence_ex(self, len_seq = 1000):
+        len_seq_l = len_seq*500
+        res = [self.next_bit() for _ in range(len_seq_l)]
+        res = fon_neyman(res)
+        return res
