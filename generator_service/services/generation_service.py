@@ -75,11 +75,12 @@ class GenerationService:
         Генерирует выигранные билеты, последовательность и сохраняет в БД.
         Возвращает словарь для JSON-ответа.
         """
-        seed = generate_seed.get_seed()
+        seed, state = generate_seed.get_seed()
         lfsr = LFSR(seed=seed)
         winning_comb, sequence = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
 
         generation = Generation(
+            seed=str(state),
             length=128,
             initial_fill=str(seed),
             sequence=sequence,
