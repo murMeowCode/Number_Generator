@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from shared.database.database import get_db, AsyncSession
 from statistics_service.schemas.statistics import (
@@ -97,4 +98,59 @@ async def analyze_file(file: UploadFile = File(...),
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"File statistics processing error: {str(e)}"
+        )
+
+@router.get(
+    "/{statistics_id}",
+    response_model=StatisticsResponseSchema,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse}
+    }
+)
+async def get_statistics(
+    statistics_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Получение результатов статистики по ID"""
+    logger.info(f"Getting statistics by ID: {statistics_id}")
+    
+    try:
+        logger.debug("Creating StatisticsProcessor instance")
+        processor = StatisticsProcessor(db, None)  # MinIO не нужен для чтения
+        
+        logger.info("Fetching statistics from database")
+        result = await processor.get_statistics_by_id(statistics_id)
+        
+        if not result:
+            logger.warning(f"Statistics not found for ID: {statistics_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Statistics record not found"
+            )
+        
+        logger.info(f"Successfully fetched statistics. Statistics ID: {result.statistics_id}")
+        
+        return StatisticsResponseSchema(
+            statistics_id=result.statistics_id,
+            sequence_id=result.sequence_id,
+            sequence_length=result.sequence_length,
+            ones_count=result.ones_count,
+            zeros_count=result.zeros_count,
+            ones_proportion=result.ones_proportion,
+            tests_passed=result.summary["tests_passed"],
+            tests_total=result.summary["tests_total"],
+            success_rate=result.summary["success_rate"],
+            created_at=result.created_at,
+            tests_results=result.tests_results
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching statistics by ID {statistics_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching statistics: {str(e)}"
         )
