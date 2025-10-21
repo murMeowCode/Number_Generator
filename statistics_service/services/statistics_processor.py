@@ -26,7 +26,7 @@ class StatisticsProcessor:
             # Предполагая, что у вас есть модель StatisticsDB и соответствующий репозиторий
             query = select(StatisticsDB).where(StatisticsDB.sequence_id == sequence_id)
             result = await self.db.execute(query)
-            db_record = result.scalar_one_or_none()
+            db_record = result.scalars().first()
             
             if not db_record:
                 return None
