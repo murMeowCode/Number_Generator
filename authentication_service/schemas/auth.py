@@ -13,7 +13,7 @@ class UserRegisterResponse(BaseModel):
     fathername: Optional[str]
     birth_date: Optional[date]
     last_login: Optional[datetime]
-    
+
     class Config:
         from_attributes = True
 

@@ -21,7 +21,9 @@ class Settings(BaseSettings):
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minio_311."
     MINIO_SECURE : bool = False
-    MINIO_AVATAR_BUCKET: str = "avatars"
+    MINIO_GENERATED_BUCKET: str = "generated"
+    MINIO_UPLOADED_BUCKET: str = "uploaded"
+    MINIO_TEST_RESULTS_BUCKET: str = "results"
     # Redis
     REDIS_HOST: str ="212.111.87.142"
     REDIS_PORT: int = 6379
