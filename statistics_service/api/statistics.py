@@ -160,7 +160,7 @@ async def get_statistics(
         )
 
 @router.get(
-    "/dashboard",
+    "/dashboard/overview",
     response_model=DashboardOverviewSchema,
     status_code=status.HTTP_200_OK
 )
