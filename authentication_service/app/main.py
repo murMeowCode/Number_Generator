@@ -1,4 +1,4 @@
-"""основной файл сервиса"""#pylint: disable=E0401, W0621, C0413
+"""основной файл сервиса"""#pylint: disable=E0401, W0621, C0413, C0411
 from contextlib import asynccontextmanager
 import sys
 import os
@@ -8,12 +8,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from shared.config.base import settings
 from shared.database.database import AsyncSessionLocal
-from auth_service.api.endpoints import auth, role_change
-from auth_service.services.auth_service import AuthService
-from auth_service.services.token_service import TokenService
-from auth_service.services.user_service import UserService
-from auth_service.messaging.producers import UserProducer
-from auth_service.messaging.consumers import AuthConsumer
+from shared.messaging.producers import AuthProducer
+from authentication_service.api.endpoints import auth
+from authentication_service.services.auth_service import AuthService
+from authentication_service.services.token_service import TokenService
+from authentication_service.services.user_service import UserService
+from authentication_service.messaging.consumers import AuthConsumer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """инициализация служб при запуске"""
     # Инициализация RabbitMQ producer
-    producer = UserProducer(settings.RABBITMQ_URL)
+    producer = AuthProducer(settings.RABBITMQ_URL)
     await producer.connect()
     print("✅ RabbitMQ producer подключен")
 
@@ -37,9 +37,9 @@ async def lifespan(app: FastAPI):
         print("✅ Служба токенов запущена")
         user_service = UserService(db)
         print("✅ Служба пользователей запущена")
-        auth_service = AuthService(token_service, user_service)
+        authentication_service = AuthService(token_service, user_service)
         print("✅ Служба аутентификации запущена")
-        consumer = AuthConsumer(settings.RABBITMQ_URL, auth_service, producer)
+        consumer = AuthConsumer(settings.RABBITMQ_URL, authentication_service, producer)
         await consumer.connect()
         print("✅ RabbitMQ consumer подключен")
 
@@ -66,9 +66,8 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(role_change.router, prefix="/role-change", tags=["role-change"])
 
 @app.get("/health")
 async def health_check():
     """апи для проверки работоспособности сервиса"""
-    return {"status": "healthy", "service": "auth_service"}
+    return {"status": "healthy", "service": "authentication_service"}

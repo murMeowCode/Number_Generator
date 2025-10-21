@@ -4,8 +4,8 @@ import uuid
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from auth_service.models.token import RefreshToken
-from auth_service.core.security import create_access_token, create_refresh_token, verify_token
+from authentication_service.models.token import RefreshToken
+from authentication_service.core.security import create_access_token, create_refresh_token, verify_token
 from shared.config.base import settings
 
 # Настройка логгера
