@@ -100,3 +100,27 @@ async def generate_winners(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
+    
+@router.get("/generation/{id}", response_model=GenerateResponse)
+async def get_generation(
+    id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Получает информацию о генерации по ID из БД.
+    """
+    file_service = FileService()  # Если нужен для сервиса
+    generation_service = GenerationService(db, file_service)
+    
+    try:
+        generation = await generation_service.get_generation_by_id(id)  # Новый метод в сервисе
+        if not generation:
+            raise HTTPException(status_code=404, detail="Генерация не найдена")
+        
+        return GenerateResponse(
+            id=str(generation.id),
+            initial_fill=generation.initial_fill,
+            sequence=generation.sequence
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка получения генерации: {str(e)}")

@@ -1,8 +1,10 @@
 """служба генерации"""#pylint: disable=W0706
+from typing import Optional
 import uuid
 import requests
 import random
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select 
 from generator_service.services.file_service import FileService
 from generator_service.models.generation import Generation
 from generator_service.services.lfsr.lfsr_base import LFSR
@@ -72,29 +74,35 @@ class GenerationService:
         Генерирует выигранные билеты, последовательность и сохраняет в БД.
         Возвращает словарь для JSON-ответа.
         """
-        # Генерируем seed (initial_fill)
         seed = generate_seed.get_seed()
         lfsr = LFSR(seed=seed)
         winning_comb = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
 
-        # Генерируем sequence с помощью LFSR (длина 128, как в твоём примере)
         
         sequence = lfsr.get_sequence(len_seq=128)
 
-        # Сохраняем в БД (используем поле winer для winning_tickets_str)
         generation = Generation(
-            length=128,  # Фиксированная длина для sequence
-            initial_fill=str(seed),  # Конвертация seed в строку
+            length=128,
+            initial_fill=str(seed),
             sequence=sequence,
-            winer=winning_comb,  # Сохраняем выигранные билеты в поле winer
+            winer=winning_comb,
         )
         self.db.add(generation)
         await self.db.commit()
         await self.db.refresh(generation)
 
-        # Возвращаем данные для JSON-ответа
         return {
             "winning_tickets": winning_comb,
             "sequence": sequence,
             "initial_fill": str(seed),
         }
+
+    async def get_generation_by_id(self, generation_id: str) -> Optional[Generation]:
+        """
+        Получает генерацию по ID из БД.
+        """
+        
+        result = await self.db.execute(
+            select(Generation).where(Generation.id == generation_id)
+        )
+        return result.scalar_one_or_none()
