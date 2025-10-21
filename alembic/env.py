@@ -10,7 +10,9 @@ from shared.database.database import Base
 from authentication_service.models.user import AuthUser
 from authentication_service.models.token import RefreshToken
 from generator_service.models.generation import Generation
+
 from alembic import context
+from statistics_service.models.statistics import StatisticsDB
 
 
 # Добавляем пути
