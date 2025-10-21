@@ -24,7 +24,7 @@ class StatisticsProcessor:
         """Получение статистики по ID из базы данных"""
         try:
             # Предполагая, что у вас есть модель StatisticsDB и соответствующий репозиторий
-            query = select(StatisticsDB).where(StatisticsDB.id == sequence_id)
+            query = select(StatisticsDB).where(StatisticsDB.sequence_id == sequence_id)
             result = await self.db.execute(query)
             db_record = result.scalar_one_or_none()
             
