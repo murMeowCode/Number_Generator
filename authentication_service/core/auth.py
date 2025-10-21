@@ -1,11 +1,11 @@
 """функции для получения информации о пользователе из заголовка"""#pylint: disable=E0401
 import logging
-from shared.database.database import get_db
-from auth_service.services.user_service import UserService
-from auth_service.services.token_service import TokenService
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from authentication_service.services.user_service import UserService
+from authentication_service.services.token_service import TokenService
+from shared.database.database import get_db
 
 security = HTTPBearer()
 
