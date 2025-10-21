@@ -104,3 +104,12 @@ class GenerationService:
             select(Generation).where(Generation.id == generation_id)
         )
         return result.scalar_one_or_none()
+    
+
+    async def get_all_generations_for_dashboard(self):
+        """
+        Возвращает список ВСЕХ генераций: отсортировано по created_at desc.
+        """
+        stmt = select(Generation).order_by(Generation.created_at.desc())
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
