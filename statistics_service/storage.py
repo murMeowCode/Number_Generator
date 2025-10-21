@@ -48,3 +48,7 @@ class MinIOClient:
         except S3Error as e:
             print(f"❌ MinIO initialization error: {e}")
             raise
+
+def get_minio_client() -> MinIOClient:
+    """Фабричная функция для получения MinIO клиента"""
+    return MinIOClient()

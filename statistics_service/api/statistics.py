@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from shared.database.database import get_db, AsyncSession
 from statistics_service.schemas.statistics import (
     StatisticsRequest, StatisticsResponseSchema, FileStatisticsResponseSchema, ErrorResponse)
 from statistics_service.services.statistics_processor import StatisticsProcessor
+from statistics_service.storage import get_minio_client, MinIOClient
+from statistics_service.schemas.statistics import FileStatisticsRequest
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
-processor = StatisticsProcessor()
+
 
 @router.post(
     "/sequence",
@@ -15,9 +18,12 @@ processor = StatisticsProcessor()
         500: {"model": ErrorResponse}
     }
 )
-async def analyze_sequence(request: StatisticsRequest):
+async def analyze_sequence(request: StatisticsRequest,
+                           db: AsyncSession=Depends(get_db),
+                           minio : MinIOClient=Depends(get_minio_client)):
     """Анализ статистики для строковой последовательности"""
     try:
+        processor = StatisticsProcessor(db,minio)
         result = await processor.process_sequence_statistics(request)
         
         return StatisticsResponseSchema(
@@ -52,13 +58,15 @@ async def analyze_sequence(request: StatisticsRequest):
         500: {"model": ErrorResponse}
     }
 )
-async def analyze_file(file: UploadFile = File(...)):
+async def analyze_file(file: UploadFile = File(...),
+                       db : AsyncSession = Depends(get_db),
+                       minio : MinIOClient=Depends(get_minio_client)):
     """Анализ статистики для файла"""
     try:
+        processor = StatisticsProcessor(db,minio)
         content = await file.read()
         file_content = content.decode('utf-8')
-        
-        from schemas import FileStatisticsRequest
+
         request = FileStatisticsRequest(file_content=file_content)
         result = await processor.process_file_statistics(request)
         
