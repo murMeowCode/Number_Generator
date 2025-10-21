@@ -56,6 +56,7 @@ class StatisticsResponseSchema(BaseModel):
     tests_total: int
     success_rate: float
     created_at: datetime
+    tests_results: Dict[TestType, TestResultDetail]
 
 class FileStatisticsResponseSchema(BaseModel):
     statistics_id: UUID
@@ -65,6 +66,7 @@ class FileStatisticsResponseSchema(BaseModel):
     tests_total: int
     success_rate: float
     created_at: datetime
+    tests_results: Dict[TestType, TestResultDetail]
 
 class ErrorResponse(BaseModel):
     error: str

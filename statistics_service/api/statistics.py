@@ -47,7 +47,8 @@ async def analyze_sequence(request: StatisticsRequest,
             tests_passed=result.summary["tests_passed"],
             tests_total=result.summary["tests_total"],
             success_rate=result.summary["success_rate"],
-            created_at=result.created_at
+            created_at=result.created_at,
+            test_results=result.tests_results
         )
         
     except ValueError as e:
@@ -89,7 +90,8 @@ async def analyze_file(file: UploadFile = File(...),
             tests_passed=result.summary["tests_passed"],
             tests_total=result.summary["tests_total"],
             success_rate=result.summary["success_rate"],
-            created_at=result.created_at
+            created_at=result.created_at,
+            tests_results=result.tests_results
         )
     except Exception as e:
         raise HTTPException(
