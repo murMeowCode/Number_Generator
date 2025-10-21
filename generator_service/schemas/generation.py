@@ -30,6 +30,7 @@ class GenerateWinnersRequest(BaseModel):
 
 # Новая схема для ответа
 class GenerateWinnersResponse(BaseModel):
+    id: str
     winning_tickets: str
     sequence: str
     initial_fill: str

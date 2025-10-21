@@ -17,7 +17,7 @@ from generator_service.services.generation_service import GenerationService
 from generator_service.services.file_service import FileService
 from shared.database.database import get_db  # Асинхронная зависимость для получения сессии БД
 
-router = APIRouter()
+router = APIRouter(prefix="/generate")
 
 # Эндпоинт для генерации в памяти (с сохранением в БД)
 @router.post("/generate", response_model=GenerateResponse)
@@ -96,6 +96,7 @@ async def generate_winners(
             max_number=request.max_number, count_of_winning_numbers=request.count_of_winning_numbers
         )
         return GenerateWinnersResponse(
+            id=str(result['id']),
             winning_tickets=result["winning_tickets"],
             sequence=result["sequence"],
             initial_fill=result["initial_fill"]

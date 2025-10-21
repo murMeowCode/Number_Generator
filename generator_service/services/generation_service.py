@@ -91,6 +91,7 @@ class GenerationService:
         await self.db.refresh(generation)
 
         return {
+            'id':str(generation.id),
             "winning_tickets": winning_comb,
             "sequence": sequence,
             "initial_fill": str(seed),
