@@ -19,18 +19,19 @@ class GenerationService:
         """
         Генерирует начальное заполнение и последовательность (заглушки).
         """
-        seed = generate_seed.get_seed()
+        seed, state = generate_seed.get_seed()
         lfsr = LFSR(seed=seed)
         sequence = lfsr.get_sequence(len_seq=length)
-        return seed, sequence
+        return seed, sequence, state
 
     async def generate_and_save_in_db(self, length: int) -> Generation:
         """
         Генерирует последовательность и сохраняет в БД (без файла).
         Возвращает объект Generation.
         """
-        seed, sequence = await self.generate_sequence(length)
+        seed, sequence, state = await self.generate_sequence(length)
         generation = Generation(
+            seed=str(state),
             length=length,
             initial_fill=str(seed),
             sequence=sequence,

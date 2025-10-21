@@ -55,4 +55,4 @@ def complete_conversion(original_float):
 
 def get_seed():
     state = fetch_xray_flares_data()
-    return complete_conversion(state)
+    return complete_conversion(state), state
