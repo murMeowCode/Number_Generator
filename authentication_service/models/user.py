@@ -3,7 +3,6 @@
 import uuid
 from sqlalchemy import Column, String, DateTime, Date
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 from shared.database.database import Base
 
 class AuthUser(Base):

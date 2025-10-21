@@ -14,7 +14,7 @@ class UserResponse(BaseModel):
     """схема для записи в локальную таблицу"""
     id: uuid.UUID
     username: str
-    email: str
+    email: EmailStr
     role: int
     last_login: Optional[datetime]
 
@@ -54,27 +54,3 @@ class LoginResponse(BaseModel):
     tokens: Optional[TokenPair] = None
     error: Optional[str] = None
     user: UserResponse
-
-class ForgotPasswordRequest(BaseModel):
-    """Запрос на восстановление"""
-    email: EmailStr
-
-class ForgotPasswordResponse(BaseModel):
-    """Ответ на восстановление"""
-    success: bool
-    message: str
-
-class ResetPasswordRequest(BaseModel):
-    """Запрос на сброс"""
-    token: str
-    new_password: str
-
-class ResetPasswordResponse(BaseModel):
-    """Ответ на сброс"""
-    success: bool
-    message: str
-
-class VKExchangeRequest(BaseModel):
-    """Схема для OAuth VK"""
-    code: str
-    device_id: str
