@@ -1,95 +1,57 @@
-"""# generator_service/api/endpoints/generation.py"""#pylint: disable=W0707
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import UUID, select, desc
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from authentication_service.core.auth import get_current_user
-from generator_service.schemas.generation import (GenerationHistoryResponse,
-GenerationRequest, GenerationResponse, TestResultSummary, GenerationHistoryItem)
-from generator_service.services.gen_service import get_generator_service, GeneratorService
-from generator_service.models.generation import Generation
-from shared.database.database import get_db
+from generator_service.schemas.generation import (
+    GenerateRequest,
+    GenerateResponse,
+    GenerateFileRequest,
+    GenerateFileResponse,
+)
+from generator_service.services.generation_service import GenerationService
+from generator_service.services.file_service import FileService
+from shared.database.database import get_db  # Асинхронная зависимость для получения сессии БД
 
-router = APIRouter(prefix="/generator", tags=["generator"])
+router = APIRouter()
 
-
-@router.post("/generate", response_model=GenerationResponse, status_code=status.HTTP_201_CREATED)
-async def create_generation(
-    request: GenerationRequest,
-    current_user: dict = Depends(get_current_user),
-    generator_service: GeneratorService = Depends(get_generator_service)
+# Эндпоинт для генерации в памяти (с сохранением в БД)
+@router.post("/generate", response_model=GenerateResponse)
+async def generate_sequence(
+    request: GenerateRequest,
+    db: AsyncSession = Depends(get_db),
 ):
     """
-    Создание новой генерации случайной последовательности
+    Генерирует последовательность, сохраняет в БД и возвращает в ответе.
     """
+    file_service = FileService()
+    generation_service = GenerationService(db, file_service)
+    
     try:
-        # Валидация длины
-        if request.length <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Length must be positive"
-            )
-
-        if request.length > 10000000:  # Ограничение на максимальную длину
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Length too large. Maximum allowed is 10,000,000"
-            )
-
-        user_id = UUID(current_user["user_id"])
-        result = await generator_service.generate_sequence(user_id, request.length)
-
-        return GenerationResponse(
-            generation_id=result["generation_id"],
-            preview=result["preview"],
-            test_results=TestResultSummary(**result["test_results"]),
-            status=result["status"]
+        generation = await generation_service.generate_and_save_in_db(request.length)
+        return GenerateResponse(
+            initial_fill=generation.initial_fill,
+            sequence=generation.sequence
         )
-
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Generation failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
 
-@router.get("/history", response_model=GenerationHistoryResponse)
-async def get_generation_history(
-    current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+# Эндпоинт для генерации в файл (с сохранением в БД и MinIO)
+@router.post("/generate-file", response_model=GenerateFileResponse)
+async def generate_sequence_to_file(
+    request: GenerateFileRequest,
+    db: AsyncSession = Depends(get_db),
 ):
     """
-    Получение истории генераций текущего пользователя
+    Генерирует, сохраняет в БД и в файл, возвращает ID, начальное заполнение, победителей и URL.
     """
+    file_service = FileService()  # Создаем FileService (предполагаем, что он не зависит от db; если зависит, передайте db)
+    generation_service = GenerationService(db, file_service)
+    
     try:
-        user_id = UUID(current_user["user_id"])
-
-        stmt = select(Generation).where(
-            Generation.user_id == user_id
-        ).order_by(desc(Generation.created_at))
-
-        result = await db.execute(stmt)
-        generations = result.scalars().all()
-
-        history_items = []
-        for gen in generations:
-            # Преобразуем test_summary из JSONB в словарь если нужно
-            test_summary = gen.test_results if gen.test_results else {
-                "nist_sts": "unknown",
-                "dieharder": "unknown", 
-                "testu01": "unknown"
-            }
-
-            history_items.append(GenerationHistoryItem(
-                generation_id=gen.id,
-                length=gen.length,
-                preview=gen.preview or "",
-                test_summary=TestResultSummary(**test_summary),
-                created_at=gen.created_at.isoformat() if gen.created_at else ""
-            ))
-
-        return GenerationHistoryResponse(generations=history_items)
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch generation history: {str(e)}"
+        generation_id, initial_fill, winner, file_url = await generation_service.generate_and_save_file(request.length, request.num_winners)
+        return GenerateFileResponse(
+            generation_id=generation_id,
+            initial_fill=initial_fill,
+            winner=winner,
+            file_url=file_url,
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка генерации файла: {str(e)}")

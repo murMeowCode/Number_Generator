@@ -9,8 +9,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from shared.database.database import Base
 from authentication_service.models.user import AuthUser
 from authentication_service.models.token import RefreshToken
-from statistics_service.models.statistics import StatisticsDB
+from generator_service.models.generation import Generation
+
 from alembic import context
+from statistics_service.models.statistics import StatisticsDB
 
 
 # Добавляем пути
