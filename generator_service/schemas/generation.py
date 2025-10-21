@@ -1,6 +1,10 @@
+from typing import Optional
 from pydantic import BaseModel
 
-
+class GenerationDashboardItem(BaseModel):
+    created_at: Optional[str]  # ISO-формат
+    seed: Optional[float]  # Полный seed
+    
 class GenerateRequest(BaseModel):
     length: int
 
@@ -26,6 +30,7 @@ class GenerateWinnersRequest(BaseModel):
 
 # Новая схема для ответа
 class GenerateWinnersResponse(BaseModel):
+    id: str
     winning_tickets: str
     sequence: str
     initial_fill: str

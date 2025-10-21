@@ -1,3 +1,4 @@
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import FileResponse
@@ -10,12 +11,13 @@ from generator_service.schemas.generation import (
     GenerateFileResponse,
     GenerateWinnersRequest,  # Добавлено
     GenerateWinnersResponse,  # Добавлено
+    GenerationDashboardItem
 )
 from generator_service.services.generation_service import GenerationService
 from generator_service.services.file_service import FileService
 from shared.database.database import get_db  # Асинхронная зависимость для получения сессии БД
 
-router = APIRouter()
+router = APIRouter(prefix="/generate")
 
 # Эндпоинт для генерации в памяти (с сохранением в БД)
 @router.post("/generate", response_model=GenerateResponse)
@@ -94,6 +96,7 @@ async def generate_winners(
             max_number=request.max_number, count_of_winning_numbers=request.count_of_winning_numbers
         )
         return GenerateWinnersResponse(
+            id=str(result['id']),
             winning_tickets=result["winning_tickets"],
             sequence=result["sequence"],
             initial_fill=result["initial_fill"]
@@ -101,26 +104,36 @@ async def generate_winners(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка генерации: {str(e)}")
     
-@router.get("/generation/{id}", response_model=GenerateResponse)
-async def get_generation(
-    id: str,
+
+
+# Эндпоинт для дашборда
+@router.get("/dashboard/generations", response_model=List[GenerationDashboardItem])
+async def get_generations_for_dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Получает информацию о генерации по ID из БД.
+    Получает список генераций для дашборда, адаптированных для фронтенда.
     """
     file_service = FileService()  # Если нужен для сервиса
     generation_service = GenerationService(db, file_service)
     
     try:
-        generation = await generation_service.get_generation_by_id(id)  # Новый метод в сервисе
-        if not generation:
-            raise HTTPException(status_code=404, detail="Генерация не найдена")
+        # Новый метод в GenerationService: возвращает список генераций (отсортированных по created_at desc, лимит 50)
+        generations = await generation_service.get_all_generations_for_dashboard()
         
-        return GenerateResponse(
-            id=str(generation.id),
-            initial_fill=generation.initial_fill,
-            sequence=generation.sequence
-        )
+        result = []
+        for gen in generations:
+            # Адаптация seed для фронтенда
+            seed_front = gen.seed[:10]
+            seed_front_float = float(seed_front)
+            # Адаптация sequence
+
+            
+            result.append(GenerationDashboardItem(
+                created_at=gen.created_at.isoformat() if gen.created_at else None,
+                seed=seed_front
+            ))
+        
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка получения генерации: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения генераций для дашборда: {str(e)}")

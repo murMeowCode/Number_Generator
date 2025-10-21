@@ -75,11 +75,12 @@ class GenerationService:
         Генерирует выигранные билеты, последовательность и сохраняет в БД.
         Возвращает словарь для JSON-ответа.
         """
-        seed = generate_seed.get_seed()
+        seed, state = generate_seed.get_seed()
         lfsr = LFSR(seed=seed)
         winning_comb, sequence = generate_win_comb.extract_unique_digits(lfsr=lfsr, num_digits=count_of_winning_numbers, max_value=max_number)
 
         generation = Generation(
+            seed=str(state),
             length=128,
             initial_fill=str(seed),
             sequence=sequence,
@@ -90,6 +91,7 @@ class GenerationService:
         await self.db.refresh(generation)
 
         return {
+            'id':str(generation.id),
             "winning_tickets": winning_comb,
             "sequence": sequence,
             "initial_fill": str(seed),
@@ -104,3 +106,12 @@ class GenerationService:
             select(Generation).where(Generation.id == generation_id)
         )
         return result.scalar_one_or_none()
+    
+
+    async def get_all_generations_for_dashboard(self):
+        """
+        Возвращает список ВСЕХ генераций: отсортировано по created_at desc.
+        """
+        stmt = select(Generation).order_by(Generation.created_at.desc())
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
