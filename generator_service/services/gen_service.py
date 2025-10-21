@@ -5,7 +5,8 @@ from celery import chain
 from generator_service.models.generation import Generation
 from generator_service.schemas.generation import GenerationResult
 from generator_service.services.file_service import FileService
-from generator_service.utils import dieharder_test_task, nist_sts_test_task, testu01_test_task
+from generator_service.gen_celery.tasks.statistics_tasks import (dieharder_test_task,
+                                                nist_sts_test_task, testu01_test_task)
 from shared.database.database import AsyncSessionLocal
 
 
