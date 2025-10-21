@@ -3,6 +3,7 @@ import os
 import sys
 from sqlalchemy import text
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -38,6 +39,15 @@ app = FastAPI(
     description="Микросервис для статистического анализа бинарных последовательностей",
     version="1.0.0",
     lifespan=app_lifespan
+)
+
+# Добавляем CORS middleware с разрешением всех источников
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешает все домены
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешает все HTTP методы (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Разрешает все заголовки
 )
 
 # Подключаем роутеры
