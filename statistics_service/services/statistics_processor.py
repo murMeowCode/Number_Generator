@@ -2,7 +2,7 @@ import logging
 import uuid
 import re
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from statistics_service.schemas.statistics import (
     StatisticsRequest, FileStatisticsRequest, StatisticsResponse, TestResult
 )
@@ -17,6 +17,32 @@ class StatisticsProcessor:
     def __init__(self, db : AsyncSession, minio_client : MinIOClient):
         self.db = db
         self.minio_client = minio_client
+        
+    async def get_statistics_by_id(self, statistics_id: uuid.UUID) -> Optional[StatisticsResponse]:
+        """Получение статистики по ID из базы данных"""
+        try:
+            # Предполагая, что у вас есть модель StatisticsDB и соответствующий репозиторий
+            db_record = await self.db.get(StatisticsDB, statistics_id)
+            
+            if not db_record:
+                return None
+            
+            # Конвертируем запись из БД в StatisticsResponse
+            return StatisticsResponse(
+                statistics_id=db_record.id,
+                sequence_id=db_record.sequence_id,
+                sequence_length=db_record.sequence_length,
+                ones_count=db_record.ones_count,
+                zeros_count=db_record.zeros_count,
+                ones_proportion=db_record.ones_proportion,
+                tests_results=db_record.tests_results,  # или нужна конвертация
+                summary=db_record.summary,
+                created_at=db_record.created_at
+            )
+        
+        except Exception as e:
+            logger.error(f"Error getting statistics by ID {statistics_id}: {str(e)}")
+            raise
     
     def _parse_sequence(self, sequence_str: str) -> Tuple[List[int], int, int]:
         """Парсинг последовательности из строки"""

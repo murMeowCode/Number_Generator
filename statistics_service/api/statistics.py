@@ -48,7 +48,7 @@ async def analyze_sequence(request: StatisticsRequest,
             tests_total=result.summary["tests_total"],
             success_rate=result.summary["success_rate"],
             created_at=result.created_at,
-            test_results=result.tests_results
+            tests_results=result.tests_results
         )
         
     except ValueError as e:
