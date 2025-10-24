@@ -1,0 +1,53 @@
+services:
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: authentication_service/Dockerfile
+    container_name: authentication-service
+    # ports:
+    #   - "8000:8000"
+    networks:
+      - prod-network
+
+  generator-service:
+    build:
+      context: ./backend
+      dockerfile: generator_service/Dockerfile
+    container_name: generator-service
+    # ports:
+    #   - "8000:8000"
+    networks:
+      - prod-network
+
+  statistics-service:
+    build:
+      context: ./backend
+      dockerfile: statistics_service/Dockerfile
+    container_name: statistics-service
+    # ports:
+    #   - "8000:8000"
+    networks:
+      - prod-network
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/ssl:/etc/nginx/ssl:ro
+      - ./frontend/src:/app/src:ro
+    networks:
+      - prod-network
+
+volumes:
+  postgres_data:
+
+networks:
+  prod-network:
+    external: true
+    name: prod-network

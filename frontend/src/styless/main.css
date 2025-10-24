@@ -1,0 +1,166 @@
+body {
+  overflow-x: hidden;
+  color: var(--color-text);
+  padding: 0;
+  margin: 0;
+  background-color: var(--color-bg);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+:root {
+  /* ——— СВЕТЛАЯ ТЕМА ——— */
+
+  /* Фоны - современные нейтральные тона */
+  --color-bg: #fefefe; /* Чистый белый с лёгшим тёплым оттенком */
+  --color-bg-muted: #f8f9fa; /* Светлый серый с холодным подтоном */
+  --color-bg-subtle: #ffffff; /* Чистый белый для карточек */
+  --color-bg-elevated: #ffffff; /* Для поднятых элементов */
+
+  /* Текст - улучшенная читаемость */
+  --color-text: #1a1d23; /* Глубокий тёмно-серый с синим подтоном */
+  --color-text-muted: #6b7280; /* Приглушённый серый */
+  --color-text-inverted: #ffffff; /* Белый текст */
+  --color-text-light: #9ca3af; /* Светлый серый для второстепенного текста */
+
+  /* Границы - тонкие и элегантные */
+  --color-border: #e5e7eb; /* Мягкий серый */
+  --color-border-hover: #d1d5db; /* Для ховеров */
+  --color-border-strong: #374151; /* Для акцентных границ */
+
+  /* Основной акцент - современный синий */
+  --color-primary: #3b82f6; /* Яркий синий */
+  --color-primary-hover: #2563eb; /* Насыщенный синий */
+  --color-primary-muted: #dbeafe; /* Светлый голубой фон */
+  --color-primary-soft: #eff6ff; /* Очень светлый для больших областей */
+
+  /* Вторичный акцент - элегантный фиолетовый */
+  --color-secondary: #8b5cf6; /* Фиолетовый */
+  --color-secondary-hover: #7c3aed;
+  --color-secondary-muted: #ede9fe;
+  --color-secondary-soft: #f5f3ff;
+
+  /* Дополнительные акценты */
+  --color-accent: #06b6d4; /* Бирюзовый для свежих акцентов */
+  --color-accent-hover: #0891b2;
+
+  /* Семантические цвета */
+  --color-success: #10b981; /* Изумрудный */
+  --color-success-soft: #ecfdf5;
+  --color-warning: #f59e0b; /* Янтарный */
+  --color-warning-soft: #fffbeb;
+  --color-error: #ef4444; /* Красный */
+  --color-error-soft: #fef2f2;
+  --color-info: #3b82f6; /* Синий */
+  --color-info-soft: #eff6ff;
+
+  /* Тени - многослойные и реалистичные */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Градиенты */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --gradient-subtle: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
+
+  /* Эффекты */
+  --backdrop-blur: blur(8px);
+  --backdrop-saturate: saturate(180%);
+}
+
+/* ——— ТЁМНАЯ ТЕМА ——— */
+[data-theme='dark'] {
+  /* Фоны - глубокие тёмные тона */
+  --color-bg: #0f0f0f; /* Глубокий чёрный */
+  --color-bg-muted: #1a1a1a; /* Тёмно-серый */
+  --color-bg-subtle: #262626; /* Для карточек */
+  --color-bg-elevated: #333333; /* Для поднятых элементов */
+
+  /* Текст - сбалансированная контрастность */
+  --color-text: #f8fafc; /* Чистый белый */
+  --color-text-muted: #94a3b8; /* Приглушённый серо-голубой */
+  --color-text-light: #64748b; /* Светлый серый */
+
+  /* Границы */
+  --color-border: #334155; /* Тёмно-серый */
+  --color-border-hover: #475569;
+  --color-border-strong: #64748b;
+
+  /* Основной акцент */
+  --color-primary: #60a5fa; /* Мягкий синий */
+  --color-primary-hover: #3b82f6;
+  --color-primary-muted: #1e3a8a; /* Тёмно-синий */
+  --color-primary-soft: #1e293b;
+
+  /* Вторичный акцент */
+  --color-secondary: #a78bfa; /* Светлый фиолетовый */
+  --color-secondary-hover: #8b5cf6;
+  --color-secondary-muted: #4c1d95;
+  --color-secondary-soft: #312e81;
+
+  /* Дополнительные акценты */
+  --color-accent: #22d3ee; /* Яркий бирюзовый */
+  --color-accent-hover: #06b6d4;
+
+  /* Семантические цвета */
+  --color-success: #34d399;
+  --color-success-soft: #064e3b;
+  --color-warning: #fbbf24;
+  --color-warning-soft: #78350f;
+  --color-error: #f87171;
+  --color-error-soft: #7f1d1d;
+  --color-info: #60a5fa;
+  --color-info-soft: #1e3a8a;
+
+  /* Тени - более выраженные в тёмной теме */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+
+  /* Градиенты */
+  --gradient-primary: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  --gradient-subtle: linear-gradient(135deg, var(--color-bg) 0%, var(--color-bg-muted) 100%);
+}
+
+/* Универсальные переменные */
+:root {
+  /* Border radius - современные скругления */
+  --border-radius-sm: 6px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-2xl: 20px;
+  --border-radius-full: 9999px;
+
+  /* Transitions - плавные анимации */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing - консистентные отступы */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Typography */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+}
+
+/* Плавные переходы для всех интерактивных элементов */
+* {
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-normal);
+}

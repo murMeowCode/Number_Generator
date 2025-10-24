@@ -1,0 +1,49 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <!-- Определения -->
+  <defs>
+    <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffcc00" />
+      <stop offset="100%" stop-color="#990033" />
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Центральный объект (Солнце/Звезда) -->
+  <circle cx="300" cy="200" r="30" fill="#ffcc00" filter="url(#glow)">
+    <animate attributeName="r" values="40;50;40" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite" />
+  </circle>
+
+  <!-- Концентрические волны -->
+  <g id="waves">
+    <!-- Волна 1 -->
+    <circle cx="300" cy="200" r="50" stroke="#ff6600" stroke-width="2" fill="none" opacity="0.6">
+      <animate attributeName="r" from="50" to="150" dur="4s" repeatCount="indefinite" />
+      <animate attributeName="opacity" from="0.6" to="0" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <!-- Волна 2 -->
+    <circle cx="300" cy="200" r="70" stroke="#ff6600" stroke-width="2" fill="none" opacity="0.4">
+      <animate attributeName="r" from="70" to="170" dur="5s" repeatCount="indefinite" begin="1s" />
+      <animate attributeName="opacity" from="0.4" to="0" dur="5s" repeatCount="indefinite" begin="1s" />
+    </circle>
+    <!-- Волна 3 -->
+    <circle cx="300" cy="200" r="90" stroke="#ff6600" stroke-width="2" fill="none" opacity="0.3">
+      <animate attributeName="r" from="90" to="190" dur="6s" repeatCount="indefinite" begin="2s" />
+      <animate attributeName="opacity" from="0.3" to="0" dur="6s" repeatCount="indefinite" begin="2s" />
+    </circle>
+    <!-- Волна 4 -->
+    <circle cx="300" cy="200" r="110" stroke="#ff6600" stroke-width="2" fill="none" opacity="0.2">
+      <animate attributeName="r" from="110" to="210" dur="7s" repeatCount="indefinite" begin="3s" />
+      <animate attributeName="opacity" from="0.2" to="0" dur="7s" repeatCount="indefinite" begin="3s" />
+    </circle>
+    <!-- Волна 5 -->
+    <circle cx="300" cy="200" r="130" stroke="#ff6600" stroke-width="2" fill="none" opacity="0.1">
+      <animate attributeName="r" from="130" to="230" dur="8s" repeatCount="indefinite" begin="4s" />
+      <animate attributeName="opacity" from="0.1" to="0" dur="8s" repeatCount="indefinite" begin="4s" />
+    </circle>
+  </g>
+
+</svg>
